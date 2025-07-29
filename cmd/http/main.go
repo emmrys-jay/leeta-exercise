@@ -18,17 +18,17 @@ import (
 	"go.uber.org/zap"
 )
 
-//	@title			Leeta Golang Exercise
-//	@version		1.0
-//	@description	Find nearest places to a given location
+// @title			Leeta Golang Exercise
+// @version		1.0
+// @description	Find nearest places to a given location
 //
-//	@contact.name	Emmanuel Jonathan
-//	@contact.url	https://github.com/emmrys-jay
-//	@contact.email	jonathanemma121@gmail.com
+// @contact.name	Emmanuel Jonathan
+// @contact.url	https://github.com/emmrys-jay
+// @contact.email	jonathanemma121@gmail.com
 //
-//	@host			localhost:8080
-//	@BasePath		/api/v1
-//	@schemes		http https
+// @host			localhost:8081
+// @BasePath		/v1
+// @schemes		http https
 func main() {
 	// Load environment variables
 	config := config.Setup()

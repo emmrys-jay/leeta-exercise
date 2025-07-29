@@ -45,8 +45,8 @@ func (ls *LocationService) RegisterLocation(ctx context.Context, location *domai
 	return locationResponse, nil
 }
 
-func (ls *LocationService) GetLocation(ctx context.Context, id string) (*domain.Location, domain.CError) {
-	location, cerr := ls.repo.GetLocationByID(ctx, id)
+func (ls *LocationService) GetLocation(ctx context.Context, name string) (*domain.Location, domain.CError) {
+	location, cerr := ls.repo.GetLocationByName(ctx, name)
 	if cerr != nil {
 		if cerr.Code() == 500 {
 

@@ -1,4 +1,4 @@
-basePath: /api/v1
+basePath: /v1
 definitions:
   domain.Ping:
     properties:
@@ -24,7 +24,7 @@ definitions:
     type: object
   http.errorResponse:
     properties:
-      messages:
+      message:
         example: Error message 1 - Error message 2
         type: string
       success:
@@ -41,7 +41,7 @@ definitions:
         example: true
         type: boolean
     type: object
-host: localhost:8080
+host: localhost:8081
 info:
   contact:
     email: jonathanemma121@gmail.com
@@ -95,7 +95,31 @@ paths:
       summary: Create a new ping object
       tags:
       - Ping
-  /location:
+  /locations:
+    get:
+      consumes:
+      - application/json
+      description: list all registered active locations
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/http.response'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: List all locations
+      tags:
+      - Location
     post:
       consumes:
       - application/json
@@ -129,7 +153,7 @@ paths:
       summary: Register a new location
       tags:
       - Location
-  /location/{name}:
+  /locations/{name}:
     delete:
       consumes:
       - application/json
@@ -194,11 +218,22 @@ paths:
       summary: Get a location by name
       tags:
       - Location
-  /locations:
+  /locations/nearest:
     get:
       consumes:
       - application/json
-      description: list all registered active locations
+      description: get the nearest location to the longitude and latitude
+      parameters:
+      - description: Latitude
+        in: query
+        name: lat
+        required: true
+        type: number
+      - description: Longitude
+        in: query
+        name: lng
+        required: true
+        type: number
       produces:
       - application/json
       responses:
@@ -210,13 +245,17 @@ paths:
           description: Validation error
           schema:
             $ref: '#/definitions/http.errorResponse'
+        "404":
+          description: Not found error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/http.errorResponse'
       security:
       - BearerAuth: []
-      summary: List all locations
+      summary: Get the nearest location to the longitude and latitude
       tags:
       - Location
 schemes:

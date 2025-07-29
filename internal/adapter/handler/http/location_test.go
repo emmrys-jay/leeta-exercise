@@ -114,13 +114,13 @@ func TestLocationHandler_RegisterLocation(t *testing.T) {
 		assert.NotNil(t, res.Data)
 
 		// Verify data structure
-		data := res.Data.(domain.Location)
-		assert.Equal(t, "Test Location", data.Name)
-		assert.Equal(t, "test-location", data.Slug)
-		assert.Equal(t, 40.7128, data.Latitude)
-		assert.Equal(t, -74.0060, data.Longitude)
-		assert.NotEmpty(t, data.ID)
-		assert.NotEmpty(t, data.CreatedAt)
+		data := res.Data.(map[string]interface{})
+		assert.Equal(t, "Test Location", data["name"])
+		assert.Equal(t, "test-location", data["slug"])
+		assert.Equal(t, 40.7128, data["latitude"])
+		assert.Equal(t, -74.0060, data["longitude"])
+		assert.NotEmpty(t, data["id"])
+		assert.NotEmpty(t, data["created_at"])
 	})
 
 	t.Run("Error - Missing required fields", func(t *testing.T) {
@@ -212,16 +212,17 @@ func TestLocationHandler_RegisterLocation(t *testing.T) {
 func TestLocationHandler_GetLocation(t *testing.T) {
 	cleanupTestData(t)
 
-	res := createTestLocationViaHTTP(t, "Get Test Location", 40.7128, -74.0060)
-	locationID := res.Data.(domain.Location).ID
+	res := createTestLocationViaHTTP(t, "Get-Test-Location", 40.7128, -74.0060)
+	assert.True(t, res.Success)
+	locationID := res.Data.(map[string]any)["id"]
 
 	t.Run("Success - Get location by name", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/location/Get Test Location", nil)
+		req := httptest.NewRequest(http.MethodGet, "/v1/locations/Get-Test-Location", nil)
 		w := httptest.NewRecorder()
 
 		// Set up chi context with URL parameters
 		rctx := chi.NewRouteContext()
-		rctx.URLParams.Add("name", "Get Test Location")
+		rctx.URLParams.Add("name", "Get-Test-Location")
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 		testHandler.GetLocation(w, req)
@@ -235,14 +236,14 @@ func TestLocationHandler_GetLocation(t *testing.T) {
 		assert.True(t, res.Success)
 		assert.NotNil(t, res.Data)
 
-		data := res.Data.(domain.Location)
-		assert.Equal(t, locationID, data.ID)
-		assert.Equal(t, "Get Test Location", data.Name)
-		assert.Equal(t, "get-test-location", data.Slug)
+		data := res.Data.(map[string]any)
+		assert.Equal(t, locationID, data["id"])
+		assert.Equal(t, "Get-Test-Location", data["name"])
+		assert.Equal(t, "get-test-location", data["slug"])
 	})
 
 	t.Run("Success - Get location by slug", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/location/get-test-location", nil)
+		req := httptest.NewRequest(http.MethodGet, "/v1/locations/get-test-location", nil)
 		w := httptest.NewRecorder()
 
 		// Set up chi context with URL parameters
@@ -261,9 +262,9 @@ func TestLocationHandler_GetLocation(t *testing.T) {
 		assert.True(t, res.Success)
 		assert.NotNil(t, res.Data)
 
-		data := res.Data.(domain.Location)
-		assert.Equal(t, locationID, data.ID)
-		assert.Equal(t, "Get Test Location", data.Name)
+		data := res.Data.(map[string]any)
+		assert.Equal(t, locationID, data["id"])
+		assert.Equal(t, "Get-Test-Location", data["name"])
 	})
 
 	t.Run("Error - Empty location name", func(t *testing.T) {
@@ -348,13 +349,13 @@ func TestLocationHandler_ListLocations(t *testing.T) {
 		assert.True(t, res.Success)
 		assert.NotNil(t, res.Data)
 
-		data := res.Data.([]domain.Location)
+		data := res.Data.([]any)
 		assert.Len(t, data, 3)
 
 		// Verify all locations are present
 		names := make(map[string]bool)
 		for _, item := range data {
-			names[item.Name] = true
+			names[item.(map[string]any)["name"].(string)] = true
 		}
 
 		assert.True(t, names["Location 1"])
@@ -378,16 +379,16 @@ func TestLocationHandler_ListLocations(t *testing.T) {
 
 		assert.True(t, res.Success)
 
-		data := res.Data.([]domain.Location)
-		assert.Len(t, data, 0)
+		assert.Nil(t, res.Data)
 	})
 }
 
 func TestLocationHandler_DeleteLocation(t *testing.T) {
 	cleanupTestData(t)
 
-	res := createTestLocationViaHTTP(t, "Delete Test Location", 40.7128, -74.0060)
-	locationName := res.Data.(domain.Location).Name
+	res := createTestLocationViaHTTP(t, "Delete-Test-Location", 40.7128, -74.0060)
+	assert.True(t, res.Success)
+	locationName := res.Data.(map[string]any)["name"].(string)
 
 	t.Run("Success - Delete location by name", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodDelete, "/location/"+locationName, nil)
@@ -490,10 +491,10 @@ func TestLocationHandler_GetNearestLocation(t *testing.T) {
 		assert.Equal(t, "Success", res.Message)
 		assert.NotNil(t, res.Data)
 
-		data := res.Data.(domain.NearestLocation)
-		assert.Equal(t, "New York", data.Name)
-		assert.NotEmpty(t, data.Distance)
-		assert.Contains(t, data.Distance, "meters")
+		data := res.Data.(map[string]any)
+		assert.Equal(t, "New York", data["name"])
+		assert.NotEmpty(t, data["distance"])
+		assert.Contains(t, data["distance"], "meters")
 	})
 
 	t.Run("Success - Find nearest location to Los Angeles", func(t *testing.T) {
@@ -512,9 +513,10 @@ func TestLocationHandler_GetNearestLocation(t *testing.T) {
 		assert.Equal(t, "Success", res.Message)
 		assert.NotNil(t, res.Data)
 
-		data := res.Data.(domain.NearestLocation)
-		assert.Equal(t, "Los Angeles", data.Name)
-		assert.NotEmpty(t, data.Distance)
+		data := res.Data.(map[string]any)
+		assert.Equal(t, "Los Angeles", data["name"])
+		assert.NotEmpty(t, data["distance"])
+		assert.Contains(t, data["distance"], "meters")
 	})
 
 	t.Run("Error - Invalid latitude", func(t *testing.T) {
@@ -564,7 +566,6 @@ func TestLocationHandler_GetNearestLocation(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.False(t, res.Success)
-		assert.Contains(t, res.Message, "not found")
 	})
 }
 

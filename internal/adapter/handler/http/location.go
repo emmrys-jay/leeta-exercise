@@ -40,7 +40,7 @@ func NewLocationHandler(svc port.LocationService, vld *validator.Validate) *Loca
 //	@Failure		400								{object}	errorResponse					"Validation error"
 //	@Failure		409								{object}	errorResponse					"Conflict error"
 //	@Failure		500								{object}	errorResponse					"Internal server error"
-//	@Router			/location [post]
+//	@Router			/locations [post]
 func (ch *LocationHandler) RegisterLocation(w http.ResponseWriter, r *http.Request) {
 	var req domain.RegisterLocationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -74,7 +74,7 @@ func (ch *LocationHandler) RegisterLocation(w http.ResponseWriter, r *http.Reque
 //	@Success		200		{object}	response		"Success"
 //	@Failure		400		{object}	errorResponse	"Validation error"
 //	@Failure		500		{object}	errorResponse	"Internal server error"
-//	@Router			/location/{name} [get]
+//	@Router			/locations/{name} [get]
 //	@Security		BearerAuth
 func (ch *LocationHandler) GetLocation(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
@@ -126,7 +126,7 @@ func (ch *LocationHandler) ListLocations(w http.ResponseWriter, r *http.Request)
 //	@Failure		400		{object}	errorResponse	"Validation error"
 //	@Failure		404		{object}	errorResponse	"Not found error"
 //	@Failure		500		{object}	errorResponse	"Internal server error"
-//	@Router			/location/{name} [delete]
+//	@Router			/locations/{name} [delete]
 //	@Security		BearerAuth
 func (ch *LocationHandler) DeleteLocation(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
@@ -151,13 +151,13 @@ func (ch *LocationHandler) DeleteLocation(w http.ResponseWriter, r *http.Request
 //	@Tags			Location
 //	@Accept			json
 //	@Produce		json
-//	@Param			lat		query		float64	true	"Latitude"
-//	@Param			lng		query		float64	true	"Longitude"
-//	@Success		200		{object}	response		"Success"
-//	@Failure		400		{object}	errorResponse	"Validation error"
-//	@Failure		404		{object}	errorResponse	"Not found error"
-//	@Failure		500		{object}	errorResponse	"Internal server error"
-//	@Router			/location/nearest [get]
+//	@Param			lat	query		float64			true	"Latitude"
+//	@Param			lng	query		float64			true	"Longitude"
+//	@Success		200	{object}	response		"Success"
+//	@Failure		400	{object}	errorResponse	"Validation error"
+//	@Failure		404	{object}	errorResponse	"Not found error"
+//	@Failure		500	{object}	errorResponse	"Internal server error"
+//	@Router			/locations/nearest [get]
 //	@Security		BearerAuth
 func (ch *LocationHandler) GetNearestLocation(w http.ResponseWriter, r *http.Request) {
 	latitude, err := strconv.ParseFloat(r.URL.Query().Get("lat"), 64)
