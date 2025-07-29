@@ -51,8 +51,8 @@ func parseError(err error) []string {
 
 // errorResponse represents an error response body format
 type errorResponse struct {
-	Success  bool   `json:"success" example:"false"`
-	Messages string `json:"messages" example:"Error message 1 - Error message 2"`
+	Success bool   `json:"success" example:"false"`
+	Message string `json:"message" example:"Error message 1 - Error message 2"`
 }
 
 // newErrorResponse is a helper function to create an error response body
@@ -67,8 +67,8 @@ func newErrorResponse(errMsgs []string) errorResponse {
 	}
 
 	return errorResponse{
-		Success:  false,
-		Messages: msgs,
+		Success: false,
+		Message: msgs,
 	}
 }
 

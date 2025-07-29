@@ -19,4 +19,4 @@ log/
 *.test
 *.out
 coverage*
-!config.yml
+config.yml

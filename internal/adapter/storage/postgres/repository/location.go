@@ -2,13 +2,12 @@ package repository
 
 import (
 	"context"
-	"time"
 
-	"savely/internal/adapter/storage/postgres"
-	"savely/internal/core/domain"
+	"leeta/internal/adapter/storage/postgres"
+	"leeta/internal/core/domain"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/google/uuid"
+	"github.com/gosimple/slug"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -16,58 +15,51 @@ import (
  * UserRepository implements port.UserRepository interface
  * and provides an access to the postgres database
  */
-type UserRepository struct {
+type LocationRepository struct {
 	db *postgres.DB
 }
 
-// NewUserRepository creates a new user repository instance
-func NewUserRepository(db *postgres.DB) *UserRepository {
-	return &UserRepository{
+// NewLocationRepository creates a new location repository instance
+func NewLocationRepository(db *postgres.DB) *LocationRepository {
+	return &LocationRepository{
 		db,
 	}
 }
 
-func (ur *UserRepository) CreateUser(ctx context.Context, user *domain.User) (*domain.User, domain.CError) {
-	query := ur.db.QueryBuilder.Insert("users").
-		Columns("first_name", "last_name", "email", "password", "role", "is_active").
-		Values(user.FirstName, user.LastName, user.Email, user.Password, user.Role, user.IsActive).
-		Suffix("RETURNING *")
+func (ur *LocationRepository) CreateLocation(ctx context.Context, location *domain.Location) (*domain.Location, domain.CError) {
 
-	sql, args, err := query.ToSql()
-	if err != nil {
-		return nil, domain.NewInternalCError(err.Error())
-	}
+	query := `
+		INSERT INTO locations (name, slug, latitude, longitude, geo) 
+		VALUES ($1, $2, $3, $4, ST_MakePoint($4, $3)::geography) 
+		RETURNING id, name, slug, latitude, longitude, created_at
+	`
 
-	err = ur.db.QueryRow(ctx, sql, args...).Scan(
-		&user.ID,
-		&user.FirstName,
-		&user.LastName,
-		&user.Email,
-		&user.Password,
-		&user.Role,
-		&user.IsActive,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-		&user.DeletedAt,
+	err := ur.db.QueryRow(
+		ctx, query, location.Name, slug.Make(location.Name), location.Latitude, location.Longitude,
+	).Scan(
+		&location.ID, &location.Name, &location.Slug, &location.Latitude, &location.Longitude,
+		&location.CreatedAt,
 	)
+
 	if err != nil {
 		// 23505 is the error code for a unique conflict error
 		if errCode := ur.db.ErrorCode(err); errCode == "23505" {
 			return nil, domain.ErrConflictingData
 		}
+
 		return nil, domain.NewInternalCError(err.Error())
 	}
 
-	return user, nil
+	return location, nil
 }
 
 // GetUserByID gets a user by ID from the database
-func (ur *UserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*domain.User, domain.CError) {
-	var user domain.User
+func (ur *LocationRepository) GetLocationByID(ctx context.Context, id string) (*domain.Location, domain.CError) {
+	var location domain.Location
 
-	query := ur.db.QueryBuilder.Select("*").
-		From("users").
-		Where(sq.Eq{"id": id, "deleted_at": nil}).
+	query := ur.db.QueryBuilder.Select("id", "name", "slug", "latitude", "longitude", "created_at").
+		From("locations").
+		Where(sq.Eq{"id": id}).
 		Limit(1)
 
 	sql, args, err := query.ToSql()
@@ -76,17 +68,14 @@ func (ur *UserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*domai
 	}
 
 	err = ur.db.QueryRow(ctx, sql, args...).Scan(
-		&user.ID,
-		&user.FirstName,
-		&user.LastName,
-		&user.Email,
-		&user.Password,
-		&user.Role,
-		&user.IsActive,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-		&user.DeletedAt,
+		&location.ID,
+		&location.Name,
+		&location.Slug,
+		&location.Latitude,
+		&location.Longitude,
+		&location.CreatedAt,
 	)
+
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, domain.ErrDataNotFound
@@ -94,16 +83,16 @@ func (ur *UserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*domai
 		return nil, domain.NewInternalCError(err.Error())
 	}
 
-	return &user, nil
+	return &location, nil
 }
 
-// GetUserByEmail gets a user by email from the database
-func (ur *UserRepository) GetUserByEmail(ctx context.Context, email string) (*domain.User, domain.CError) {
-	var user domain.User
+// GetLocationBySlug gets a location by slug from the database
+func (ur *LocationRepository) GetLocationByName(ctx context.Context, name string) (*domain.Location, domain.CError) {
+	var location domain.Location
 
-	query := ur.db.QueryBuilder.Select("*").
-		From("users").
-		Where(sq.Eq{"email": email, "deleted_at": nil}).
+	query := ur.db.QueryBuilder.Select("id", "name", "slug", "latitude", "longitude", "created_at").
+		From("locations").
+		Where(sq.Or{sq.Eq{"name": name}, sq.Eq{"slug": slug.Make(name)}}).
 		Limit(1)
 
 	sql, args, err := query.ToSql()
@@ -112,17 +101,14 @@ func (ur *UserRepository) GetUserByEmail(ctx context.Context, email string) (*do
 	}
 
 	err = ur.db.QueryRow(ctx, sql, args...).Scan(
-		&user.ID,
-		&user.FirstName,
-		&user.LastName,
-		&user.Email,
-		&user.Password,
-		&user.Role,
-		&user.IsActive,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-		&user.DeletedAt,
+		&location.ID,
+		&location.Name,
+		&location.Slug,
+		&location.Latitude,
+		&location.Longitude,
+		&location.CreatedAt,
 	)
+
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, domain.ErrDataNotFound
@@ -130,17 +116,16 @@ func (ur *UserRepository) GetUserByEmail(ctx context.Context, email string) (*do
 		return nil, domain.NewInternalCError(err.Error())
 	}
 
-	return &user, nil
+	return &location, nil
 }
 
-// ListUsers lists all users from the database
-func (ur *UserRepository) ListUsers(ctx context.Context) ([]domain.User, domain.CError) {
-	var user domain.User
-	var users []domain.User
+// ListLocations lists all locations from the database
+func (ur *LocationRepository) ListLocations(ctx context.Context) ([]domain.Location, domain.CError) {
+	var location domain.Location
+	var locations []domain.Location
 
-	query := ur.db.QueryBuilder.Select("*").
-		From("users").
-		Where(sq.Eq{"deleted_at": nil}).
+	query := ur.db.QueryBuilder.Select("id", "name", "slug", "latitude", "longitude", "created_at").
+		From("locations").
 		OrderBy("created_at DESC")
 
 	sql, args, err := query.ToSql()
@@ -156,69 +141,27 @@ func (ur *UserRepository) ListUsers(ctx context.Context) ([]domain.User, domain.
 
 	for rows.Next() {
 		err := rows.Scan(
-			&user.ID,
-			&user.FirstName,
-			&user.LastName,
-			&user.Email,
-			&user.Password,
-			&user.Role,
-			&user.IsActive,
-			&user.CreatedAt,
-			&user.UpdatedAt,
-			&user.DeletedAt,
+			&location.ID,
+			&location.Name,
+			&location.Slug,
+			&location.Latitude,
+			&location.Longitude,
+			&location.CreatedAt,
 		)
 		if err != nil {
 			return nil, domain.NewInternalCError(err.Error())
 		}
 
-		users = append(users, user)
+		locations = append(locations, location)
 	}
 
-	return users, nil
+	return locations, nil
 }
 
-// UpdateUser updates a user by ID in the database
-func (ur *UserRepository) UpdateUser(ctx context.Context, user *domain.User) (*domain.User, domain.CError) {
-	query := ur.db.QueryBuilder.Update("users").
-		Set("first_name", user.FirstName).
-		Set("last_name", user.LastName).
-		Set("updated_at", time.Now()).
-		Where(sq.Eq{"id": user.ID, "deleted_at": nil}).
-		Suffix("RETURNING *")
-
-	sql, args, err := query.ToSql()
-	if err != nil {
-		return nil, domain.NewInternalCError(err.Error())
-	}
-
-	err = ur.db.QueryRow(ctx, sql, args...).Scan(
-		&user.ID,
-		&user.FirstName,
-		&user.LastName,
-		&user.Email,
-		&user.Password,
-		&user.Role,
-		&user.IsActive,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-		&user.DeletedAt,
-	)
-	if err != nil {
-		if errCode := ur.db.ErrorCode(err); errCode == "23505" {
-			return nil, domain.ErrConflictingData
-		}
-		return nil, domain.NewInternalCError(err.Error())
-	}
-
-	return user, nil
-}
-
-// DeleteUser deletes a user by ID from the database
-func (ur *UserRepository) DeleteUser(ctx context.Context, id uuid.UUID) domain.CError {
-	query := ur.db.QueryBuilder.Update("users").
-		Set("deleted_at", time.Now()).
-		Set("is_active", false).
-		Where(sq.Eq{"id": id})
+// DeleteLocation deletes a location by name or slug from the database
+func (ur *LocationRepository) DeleteLocation(ctx context.Context, name string) domain.CError {
+	query := ur.db.QueryBuilder.Delete("locations").
+		Where(sq.Or{sq.Eq{"name": name}, sq.Eq{"slug": slug.Make(name)}})
 
 	sql, args, err := query.ToSql()
 	if err != nil {
@@ -227,11 +170,35 @@ func (ur *UserRepository) DeleteUser(ctx context.Context, id uuid.UUID) domain.C
 
 	_, err = ur.db.Exec(ctx, sql, args...)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return domain.ErrDataNotFound
-		}
 		return domain.NewInternalCError(err.Error())
 	}
 
 	return nil
+}
+
+// GetNearestLocation gets the nearest location from the database
+func (ur *LocationRepository) GetNearestLocation(ctx context.Context, latitude, longitude float64) (*domain.NearestLocation, domain.CError) {
+	var location domain.NearestLocation
+
+	query := `
+		SELECT id, name, slug, latitude, longitude, created_at,
+		ST_Distance(geo, ST_MakePoint($1, $2)::geography) AS distance_meters
+		FROM locations
+		ORDER BY distance_meters
+		LIMIT 1
+	`
+
+	err := ur.db.QueryRow(ctx, query, longitude, latitude).Scan(
+		&location.ID, &location.Name, &location.Slug, &location.Latitude,
+		&location.Longitude, &location.CreatedAt, &location.Distance,
+	)
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, domain.NewInternalCError(err.Error())
+	}
+
+	return &location, nil
 }

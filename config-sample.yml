@@ -2,22 +2,13 @@ database:
   protocol: "postgresql"
   host: "127.0.0.1"
   port: "5433"
-  name: "savely"
+  name: "leeta"
   user: "postgres"
   password: "postgres"
-redis:
-  address: "localhost:6379"
-  password: "password"
 server:
-  httpUrl: "127.0.0.1"
+  httpUrl: "0.0.0.0"
   httpPort: "8080"
   httpAllowedOrigins: "http://127.0.0.1:3000,http://127.0.0.1:8080"
 app: 
-  name: "savely"
+  name: "leeta"
   env: "development"
-token: 
-  duration: "1h"
-  secret: ""
-admin:
-  email: "savely-admin@gmail.com"
-  password: "password"

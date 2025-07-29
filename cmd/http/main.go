@@ -18,17 +18,17 @@ import (
 	"go.uber.org/zap"
 )
 
-// @title						Leeta Golang Exercise
-// @version					1.0
-// @description				Find nearest places to a given location
+//	@title			Leeta Golang Exercise
+//	@version		1.0
+//	@description	Find nearest places to a given location
 //
-// @contact.name				Emmanuel Jonathan
-// @contact.url				https://github.com/emmrys-jay
-// @contact.email				jonathanemma121@gmail.com
+//	@contact.name	Emmanuel Jonathan
+//	@contact.url	https://github.com/emmrys-jay
+//	@contact.email	jonathanemma121@gmail.com
 //
-// @host						localhost:8080
-// @BasePath					/api/v1
-// @schemes					http https
+//	@host			localhost:8080
+//	@BasePath		/api/v1
+//	@schemes		http https
 func main() {
 	// Load environment variables
 	config := config.Setup()
@@ -40,8 +40,9 @@ func main() {
 		zap.String("app", config.App.Name),
 		zap.String("env", config.App.Env))
 
-	// Init database
 	ctx := context.Background()
+
+	// Init database
 	db, err := postgres.New(ctx, &config.Database)
 	if err != nil {
 		l.Error("Error initializing database connection", zap.Error(err))
@@ -67,33 +68,16 @@ func main() {
 	pingService := service.NewPingService(pingRepo)
 	pingHandler := httpHandler.NewPingHandler(pingService, validator.New())
 
-	// User
-	userRepo := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepo)
-	userHandler := httpHandler.NewUserHandler(userService, validator.New())
+	// Location
+	locationRepo := repository.NewLocationRepository(db)
+	locationService := service.NewLocationService(locationRepo)
+	locationHandler := httpHandler.NewLocationHandler(locationService, validator.New())
 
 	// Init router
-	router, err := httpHandler.NewRouter(
-		&config.Server,
-		l,
-		*pingHandler,
-		*userHandler,
-	)
+	router, err := httpHandler.NewRouter(&config.Server, l, *pingHandler, *locationHandler)
 	if err != nil {
 		l.Error("Error initializing router ", zap.Error(err))
 		os.Exit(1)
-	}
-
-	// Create Admin User
-	if err := userService.CreateAdminUser(context.Background(), config.Admin.Email, config.Admin.Password); err != nil {
-		if err.Code() != 500 {
-			l.Info("Admin user already exists", zap.String("info", err.Error()))
-		} else {
-			l.Error("Could not create admin user, exiting...", zap.Error(err))
-			os.Exit(1)
-		}
-	} else {
-		l.Info("Successfully created admin user with email: ", zap.String("email", config.Admin.Email))
 	}
 
 	// Start server

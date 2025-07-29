@@ -1,7 +1,6 @@
 package http
 
 import (
-	"net/http"
 	"strings"
 
 	"leeta/internal/adapter/config"
@@ -24,7 +23,7 @@ func NewRouter(
 	config *config.ServerConfiguration,
 	logger *zap.Logger,
 	pingHandler PingHandler,
-	userHandler UserHandler,
+	locationHandler LocationHandler,
 ) (*Router, error) {
 
 	// CORS
@@ -56,7 +55,7 @@ func NewRouter(
 	))
 
 	// v1
-	router.Route("/api/v1", func(r chi.Router) {
+	router.Route("/v1", func(r chi.Router) {
 
 		// Ping
 		r.Route("/health", func(r chi.Router) {
@@ -64,17 +63,15 @@ func NewRouter(
 			r.Post("/", pingHandler.PingPost)
 		})
 
-		// Auth
-		r.Post("/login", authHandler.Login)
-
-		// User
-		r.Route("/user", func(r chi.Router) {
-			r.Post("/", userHandler.RegisterUser)
-			r.Get("/{id}", adminMiddleware(http.HandlerFunc(userHandler.GetUser), token, logger))
-			r.Patch("/{id}", authMiddleware(http.HandlerFunc(userHandler.UpdateUser), token, logger))
-			r.Delete("/{id}", adminMiddleware(http.HandlerFunc(userHandler.DeleteUser), token, logger))
+		// Location
+		r.Route("/locations", func(r chi.Router) {
+			r.Post("/", locationHandler.RegisterLocation)
+			r.Get("/{name}", locationHandler.GetLocation)
+			r.Delete("/{name}", locationHandler.DeleteLocation)
+			r.Get("/", locationHandler.ListLocations)
+			r.Get("/nearest", locationHandler.GetNearestLocation)
 		})
-		r.Get("/users", adminMiddleware(http.HandlerFunc(userHandler.ListUsers), token, logger))
+
 	})
 
 	return &Router{

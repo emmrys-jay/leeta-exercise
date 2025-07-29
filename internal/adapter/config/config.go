@@ -16,7 +16,7 @@ var (
 func Setup() *Configuration {
 	var configuration *Configuration
 
-	viper.SetConfigName("config-sample")
+	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 

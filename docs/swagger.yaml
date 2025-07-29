@@ -1,0 +1,225 @@
+basePath: /api/v1
+definitions:
+  domain.Ping:
+    properties:
+      name:
+        type: string
+    type: object
+  domain.RegisterLocationRequest:
+    properties:
+      latitude:
+        maximum: 90
+        minimum: -90
+        type: number
+      longitude:
+        maximum: 180
+        minimum: -180
+        type: number
+      name:
+        type: string
+    required:
+    - latitude
+    - longitude
+    - name
+    type: object
+  http.errorResponse:
+    properties:
+      messages:
+        example: Error message 1 - Error message 2
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  http.response:
+    properties:
+      data: {}
+      message:
+        example: Success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: jonathanemma121@gmail.com
+    name: Emmanuel Jonathan
+    url: https://github.com/emmrys-jay
+  description: Find nearest places to a given location
+  title: Leeta Golang Exercise
+  version: "1.0"
+paths:
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: check server status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ping created
+          schema:
+            $ref: '#/definitions/http.response'
+      summary: Check server status
+      tags:
+      - Ping
+    post:
+      consumes:
+      - application/json
+      description: create a new ping object with name
+      parameters:
+      - description: Create ping request
+        in: body
+        name: domain.Ping
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Ping'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Ping created
+          schema:
+            $ref: '#/definitions/http.response'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Create a new ping object
+      tags:
+      - Ping
+  /location:
+    post:
+      consumes:
+      - application/json
+      description: register a new location with all required details
+      parameters:
+      - description: Location
+        in: body
+        name: domain.RegisterLocationRequest
+        required: true
+        schema:
+          $ref: '#/definitions/domain.RegisterLocationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Location created successfully
+          schema:
+            $ref: '#/definitions/http.response'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+        "409":
+          description: Conflict error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Register a new location
+      tags:
+      - Location
+  /location/{name}:
+    delete:
+      consumes:
+      - application/json
+      description: delete a location through name
+      parameters:
+      - description: Location name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/http.response'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+        "404":
+          description: Not found error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a location by name
+      tags:
+      - Location
+    get:
+      consumes:
+      - application/json
+      description: fetch a location through name
+      parameters:
+      - description: Location name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/http.response'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a location by name
+      tags:
+      - Location
+  /locations:
+    get:
+      consumes:
+      - application/json
+      description: list all registered active locations
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/http.response'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: List all locations
+      tags:
+      - Location
+schemes:
+- http
+- https
+swagger: "2.0"
