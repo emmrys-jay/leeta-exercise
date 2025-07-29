@@ -20,6 +20,7 @@ A location management service built with Go, featuring geographic location stora
   ```bash
   brew install yq  # macOS
   ```
+- **make**: Makefile for cli command management
 
 ## 🛠️ Setup
 
@@ -55,7 +56,7 @@ app:
   env: "development"
 ```
 
-Ensure your settings match with the `environment` variables of the posgres service in docker-compose.yml
+Ensure your settings match with the `environment` variables of the posgres service in `docker-compose.yml`
 
 ```yaml
     postgres:
@@ -84,8 +85,16 @@ If you are on a mac and yq is installed, set your environment to have this forma
 Build and start all services (database, migrations, and application):
 
 ```bash
-make service-build
+make service-up
 ```
+
+OR
+
+```bash 
+DB_PASSWORD=$(DB_PASSWORD) DB_NAME=$(DB_NAME) DB_USER=$(DB_USER) docker-compose up -d
+```
+
+You can ignore `DB_PASSWORD`, `DB_NAME` and `DB_USER` if they are already set in `docker-compose.yml`
 
 This command will:
 - Build the Docker image

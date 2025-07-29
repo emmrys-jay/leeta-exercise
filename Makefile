@@ -29,7 +29,7 @@ install: ## Install dependencies
 	brew install yq
 
 service-build: ## Rebuild image and containers
-	DB_PASSWORD=$(DB_PASSWORD) DB_NAME=$(DB_NAME) DB_USER=$(DB_USER) docker-compose up --build
+	DB_PASSWORD=$(DB_PASSWORD) DB_NAME=$(DB_NAME) DB_USER=$(DB_USER) docker-compose up --build  -d
 
 service-up: ## Start docker services
 	DB_PASSWORD=$(DB_PASSWORD) DB_NAME=$(DB_NAME) DB_USER=$(DB_USER) docker-compose up -d
