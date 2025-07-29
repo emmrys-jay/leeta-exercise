@@ -35,7 +35,7 @@ func setupTestDB(t *testing.T) {
 		Port:     "5433",
 		User:     "postgres",
 		Password: "postgres",
-		Name:     "leeta_test",
+		Name:     "postgres",
 	}
 
 	// Connect to test database

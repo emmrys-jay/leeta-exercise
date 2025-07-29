@@ -101,6 +101,10 @@ The service will be available at: **http://localhost:8081**
 ### Swagger UI
 Access the interactive API documentation at: **http://localhost:8081/swagger/**
 
+### Postman
+You can import the postman documentation for this API using the json file in the root directory:
+`Leeta.postman_collection.json`
+
 ### API Endpoints
 
 #### Health Check
@@ -227,6 +231,9 @@ GET /v1/locations/nearest?lat=40.7589&lng=-73.9851
 ## 🧪 Testing
 
 ### Run All Tests
+
+To run all tests, ensure that your database is running on the specified port in your `config.yml`. A quick feat to 
+achieve this is to make sure your service is running on one terminal, then you run a test on the other.
 ```bash
 make test
 ```
@@ -234,11 +241,6 @@ make test
 ### Run Tests with Race Detection
 ```bash
 go test -v ./... -race
-```
-
-### Run Integration Tests
-```bash
-go test -tags=integration ./...
 ```
 
 ## 🛠️ Development
@@ -275,12 +277,6 @@ make migrate-up
 #### Rollback Migrations
 ```bash
 make migrate-down
-```
-
-### Development Server
-Start the development server with hot reload:
-```bash
-make dev
 ```
 
 ## 🏗️ Project Structure

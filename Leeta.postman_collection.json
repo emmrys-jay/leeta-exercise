@@ -1,0 +1,144 @@
+{
+	"info": {
+		"_postman_id": "0f12086a-ed96-4159-8228-a53f5e5a3a5b",
+		"name": "Leeta",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27735481",
+		"_collection_link": "https://orange-robot-527173.postman.co/workspace/MedBuddy~fbe3ac65-b0d3-4db6-8b90-354edeffbd6f/collection/27735481-0f12086a-ed96-4159-8228-a53f5e5a3a5b?action=share&source=collection_link&creator=27735481"
+	},
+	"item": [
+		{
+			"name": "Register Location",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Station A\",\n    \"latitude\": 50.7128,\n    \"longitude\": -74.0060\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseURL}}/v1/locations",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"v1",
+						"locations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Locations",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BaseURL}}/v1/locations",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"v1",
+						"locations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Nearest Location",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BaseURL}}/v1/nearest?lat&long",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"v1",
+						"nearest"
+					],
+					"query": [
+						{
+							"key": "lat",
+							"value": null
+						},
+						{
+							"key": "long",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Location",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{BaseURL}}/v1/locations/:name",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"v1",
+						"locations",
+						":name"
+					],
+					"variable": [
+						{
+							"key": "name",
+							"value": "Station A"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Location By Name",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{BaseURL}}/v1/locations/:name",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"v1",
+						"locations",
+						":name"
+					],
+					"variable": [
+						{
+							"key": "name",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
