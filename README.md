@@ -55,6 +55,31 @@ app:
   env: "development"
 ```
 
+Ensure your settings match with the `environment` variables of the posgres service in docker-compose.yml
+
+```yaml
+    postgres:
+        .
+        .
+        .
+        environment:
+            POSTGRES_USER: "postgres" 
+            POSTGRES_PASSWORD: "postgres"
+            POSTGRES_DB: "leeta"
+```
+
+If you are on a mac and yq is installed, set your environment to have this format so docker compose can pick your configs from `config.yml`
+```yaml
+    postgres:
+        .
+        .
+        .
+        environment:
+            POSTGRES_USER: "${DB_USER}"
+            POSTGRES_PASSWORD: "${DB_PASSWORD}"
+            POSTGRES_DB: "${DB_NAME}"
+```
+
 ### 3. Start the Service
 Build and start all services (database, migrations, and application):
 
